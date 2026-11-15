@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#16130F">
+  <title>Rozhlas 68</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:wght@500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="intro" class="screen intro">
+    <header class="intro-head">
+      <p class="eyebrow">AUDIOWALK</p>
+      <h1>ROZHLAS 68</h1>
+    </header>
+    <div class="intro-art">
+      <svg width="220" height="220" viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="104" fill="none" stroke="#3A3128" stroke-width="2"/>
+        <circle cx="110" cy="110" r="74" fill="none" stroke="#3A3128" stroke-width="2" stroke-dasharray="4 6"/>
+        <circle cx="110" cy="110" r="44" fill="none" stroke="#3A3128" stroke-width="2"/>
+        <line x1="110" y1="110" x2="110" y2="18" stroke="#F2A33A" stroke-width="3" stroke-linecap="round"/>
+        <path d="M110 6 L100 26 L120 26 Z" fill="#F2A33A"/>
+        <circle cx="110" cy="110" r="7" fill="#F2A33A"/>
+      </svg>
+    </div>
+    <div class="intro-text">
+      <p class="lead">Natáčej telefon jako anténu. V každém směru zachytíš jiné vysílání.</p>
+      <p class="muted">Nasaď si sluchátka. Po klepnutí tě telefon požádá o přístup ke kompasu.</p>
+    </div>
+    <button id="start" class="primary">ZAPNOUT PŘIJÍMAČ</button>
+  </main>
+
+  <main id="tuner" class="screen tuner" hidden>
+    <header class="tuner-head">
+      <p class="brand">ROZHLAS 68</p>
+      <button id="mute" class="icon" aria-label="Ztlumit" aria-pressed="false">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6 9H2v6h4l5 4V5z"/>
+          <path class="wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+          <path class="wave" d="M19 5a10 10 0 0 1 0 14"/>
+          <path class="cross" d="M16 9l6 6M22 9l-6 6"/>
+        </svg>
+      </button>
+    </header>
+
+    <div class="dial-wrap">
+      <div class="dial">
+        <div class="dial-face"></div>
+        <div id="beam" class="dial-beam"></div>
+        <div id="card" class="dial-card"></div>
+        <div class="needle"></div>
+        <div class="dial-center">
+          <p id="heading" class="heading">000°</p>
+          <p class="label">AZIMUT</p>
+        </div>
+      </div>
+    </div>
+
+    <section class="panel" aria-live="polite">
+      <div class="panel-row">
+        <p class="label">PŘÍJEM</p>
+        <p class="label">ŠUM <span id="noise">100</span> %</p>
+      </div>
+      <p id="station" class="station off">· · · šum · · ·</p>
+      <p id="file" class="muted small">mezi stanicemi</p>
+      <div id="meter" class="meter"></div>
+    </section>
+
+    <ul id="levels" class="levels"></ul>
+
+    <div class="manual">
+      <div class="manual-row">
+        <label for="manual" class="label">RUČNÍ SMĚR</label>
+        <span id="source" class="label">čekám na kompas…</span>
+      </div>
+      <input id="manual" type="range" min="0" max="359" value="0">
+    </div>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
