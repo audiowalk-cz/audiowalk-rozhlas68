@@ -10,7 +10,7 @@ Vše podstatné je v `config.js`:
 - `beam` – poloviční šířka výseče příjmu ve stupních. Čím menší, tím přesněji je potřeba mířit.
 - `noiseLevel` – hlasitost šumu mezi stanicemi, `noiseFloor` – šum, který je slyšet vždy.
 
-MP3 soubory patří do `audio/`. Současné soubory jsou jen zkušební tóny.
+MP3 soubory patří do `audio/`. Současné ukázky jsou 90s úseky z audiowalku Korzo 2023 (audiowalk-cz/audiowalk-korzo-2023, stopy 1, 2, 3 a 5).
 
 ## Spuštění
 
