@@ -1,3 +1,21 @@
 # Rozhlas 68
 
-Prototyp audiowalku: telefon funguje jako anténa.
+Prototyp audiowalku: telefon funguje jako anténa. Podle směru z kompasu hraje stanice, na kterou míříš, a mezi stanicemi je slyšet šum.
+
+## Úpravy
+
+Vše podstatné je v `config.js`:
+
+- `stations` – seznam stanic: `name`, `file` (cesta k MP3), `bearing` (azimut ve stupních, 0 = sever, 90 = východ).
+- `beam` – poloviční šířka výseče příjmu ve stupních. Čím menší, tím přesněji je potřeba mířit.
+- `noiseLevel` – hlasitost šumu mezi stanicemi, `noiseFloor` – šum, který je slyšet vždy.
+
+MP3 soubory patří do `audio/`. Současné soubory jsou jen zkušební tóny.
+
+## Spuštění
+
+Stránka je čistě statická. Kompas v prohlížeči funguje jen přes HTTPS (GitHub Pages), lokálně stačí `python3 -m http.server` a ruční posuvník.
+
+- iOS: přístup ke kompasu se povolí po klepnutí na „Zapnout přijímač“.
+- Android: používá se `deviceorientationabsolute`.
+- Bez kompasu se směr nastavuje posuvníkem „Ruční směr“.
