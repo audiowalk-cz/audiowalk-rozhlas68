@@ -129,7 +129,7 @@
         fellBack = true;
         fallbackTone(gain, i);
       });
-      el.src = s.file;
+      el.src = `${s.file}${s.file.includes("?") ? "&" : "?"}v=${window.ROZHLAS_BUILD.startsWith("__") ? Date.now() : window.ROZHLAS_BUILD}`;
       ctx.createMediaElementSource(el).connect(gain);
       el.play().catch(() => {});
       voices.push({ station: s, el, gain });

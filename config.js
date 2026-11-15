@@ -1,3 +1,4 @@
+window.ROZHLAS_BUILD = "__BUILD__";
 window.ROZHLAS_CONFIG = {
   beam: 35,
   noiseLevel: 0.22,
