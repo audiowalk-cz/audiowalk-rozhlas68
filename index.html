@@ -46,6 +46,12 @@
       </button>
     </header>
 
+    <div class="tabs" role="tablist" aria-label="Způsob ladění">
+      <button id="tab-compass" class="tab" role="tab" aria-selected="true" aria-controls="mode-compass">Kompas</button>
+      <button id="tab-radio" class="tab" role="tab" aria-selected="false" aria-controls="mode-radio">Frekvence</button>
+    </div>
+
+    <section id="mode-compass" class="mode" role="tabpanel" aria-labelledby="tab-compass">
     <div class="dial-wrap">
       <div class="dial">
         <div class="dial-face"></div>
@@ -58,6 +64,26 @@
         </div>
       </div>
     </div>
+    </section>
+
+    <section id="mode-radio" class="mode radio" role="tabpanel" aria-labelledby="tab-radio" hidden>
+      <div class="scale" aria-hidden="true">
+        <div class="scale-head">
+          <span>VKV</span>
+          <span id="freq" class="freq">69.00 MHz</span>
+        </div>
+        <div id="scale-body" class="scale-body">
+          <div id="scale-marks" class="scale-marks"></div>
+          <div id="pointer" class="pointer"></div>
+        </div>
+      </div>
+      <div class="knob-wrap">
+        <div id="knob" class="knob" role="slider" tabindex="0" aria-label="Ladění frekvence" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+          <div id="knob-cap" class="knob-cap"><span class="knob-dot"></span></div>
+        </div>
+        <p class="label">OTÁČEJ PRSTEM</p>
+      </div>
+    </section>
 
     <section class="panel" aria-live="polite">
       <div class="panel-row">
@@ -71,7 +97,7 @@
 
     <ul id="levels" class="levels"></ul>
 
-    <div class="manual">
+    <div id="manual-wrap" class="manual">
       <div class="manual-row">
         <label for="manual" class="label">RUČNÍ SMĚR</label>
         <span id="source" class="label">čekám na kompas…</span>

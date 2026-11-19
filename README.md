@@ -7,6 +7,8 @@ Prototyp audiowalku: telefon funguje jako anténa. Podle směru z kompasu hraje 
 Vše podstatné je v `config.js`:
 
 - `stations` – seznam stanic: `name`, `file` (cesta k MP3), `bearing` (azimut ve stupních, 0 = sever, 90 = východ).
+- `stations[].freq` – frekvence stanice v MHz pro režim Frekvence.
+- `radio` – rozsah stupnice (`min`, `max`), výchozí frekvence (`start`), šířka příjmu v MHz (`bandwidth`) a kolik MHz ujede jedna otáčka knoflíku (`mhzPerTurn`).
 - `beam` – poloviční šířka výseče příjmu ve stupních. Čím menší, tím přesněji je potřeba mířit.
 - `noiseLevel` – hlasitost šumu mezi stanicemi, `noiseFloor` – šum, který je slyšet vždy.
 

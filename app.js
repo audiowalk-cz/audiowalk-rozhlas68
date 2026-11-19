@@ -12,7 +12,12 @@
     manualUntil: 0,
     muted: false,
     denied: false,
+    mode: "compass",
+    freq: cfg.radio.start,
+    freqShown: cfg.radio.start,
+    knobAngle: 0,
   };
+  const radio = cfg.radio;
 
   let ctx = null;
   let master = null;
@@ -20,7 +25,89 @@
   const voices = [];
 
   const angleDiff = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
-  const gainFor = (d) => (d >= cfg.beam ? 0 : 0.5 + 0.5 * Math.cos((Math.PI * d) / cfg.beam));
+  const gainFor = (d, width) => (d >= width ? 0 : 0.5 + 0.5 * Math.cos((Math.PI * d) / width));
+  const clampFreq = (f) => Math.min(radio.max, Math.max(radio.min, f));
+  const freqPct = (f) => ((f - radio.min) / (radio.max - radio.min)) * 100;
+
+  function buildScale() {
+    const marks = $("scale-marks");
+    const steps = Math.round((radio.max - radio.min) * 5);
+    for (let i = 0; i <= steps; i++) {
+      const f = radio.min + i / 5;
+      const whole = Math.abs(f - Math.round(f)) < 0.01;
+      const tick = document.createElement("div");
+      tick.className = whole ? "scale-tick major" : "scale-tick";
+      tick.style.left = `${freqPct(f)}%`;
+      marks.appendChild(tick);
+      if (whole) {
+        const num = document.createElement("span");
+        num.className = "scale-num";
+        num.style.left = `${freqPct(f)}%`;
+        num.textContent = Math.round(f);
+        marks.appendChild(num);
+      }
+    }
+    cfg.stations.forEach((s) => {
+      const m = document.createElement("div");
+      m.className = "scale-station";
+      m.style.left = `${freqPct(s.freq)}%`;
+      const label = document.createElement("span");
+      label.textContent = s.key;
+      m.appendChild(label);
+      m.appendChild(document.createElement("i"));
+      marks.appendChild(m);
+    });
+  }
+
+  function setMode(mode) {
+    state.mode = mode;
+    const radioOn = mode === "radio";
+    $("mode-compass").hidden = radioOn;
+    $("mode-radio").hidden = !radioOn;
+    $("manual-wrap").hidden = radioOn;
+    $("tab-compass").setAttribute("aria-selected", String(!radioOn));
+    $("tab-radio").setAttribute("aria-selected", String(radioOn));
+    cfg.stations.forEach((s) => {
+      s.unitEl.textContent = radioOn ? s.freq.toFixed(1) : `${s.bearing}°`;
+    });
+    try { localStorage.setItem("rozhlas-mode", mode); } catch (_) {}
+  }
+
+  function turnKnob(deltaDeg) {
+    state.knobAngle += deltaDeg;
+    state.freq = clampFreq(state.freq + (deltaDeg / 360) * radio.mhzPerTurn);
+  }
+
+  function setupKnob() {
+    const knob = $("knob");
+    let last = null;
+    const angleAt = (e) => {
+      const r = knob.getBoundingClientRect();
+      return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) / rad;
+    };
+    knob.addEventListener("pointerdown", (e) => {
+      knob.setPointerCapture(e.pointerId);
+      last = angleAt(e);
+      e.preventDefault();
+    });
+    knob.addEventListener("pointermove", (e) => {
+      if (last === null) return;
+      const a = angleAt(e);
+      let d = a - last;
+      if (d > 180) d -= 360;
+      if (d < -180) d += 360;
+      last = a;
+      turnKnob(d);
+    });
+    const end = () => { last = null; };
+    knob.addEventListener("pointerup", end);
+    knob.addEventListener("pointercancel", end);
+    knob.addEventListener("keydown", (e) => {
+      const step = e.shiftKey ? 24 : 2.4;
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") { turnKnob(step); e.preventDefault(); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowDown") { turnKnob(-step); e.preventDefault(); }
+    });
+  }
 
   function buildDial() {
     const card = $("card");
@@ -68,6 +155,7 @@
       li.querySelector(".n").textContent = s.name;
       li.querySelector(".b").textContent = `${s.bearing}°`;
       s.barEl = li.querySelector("i");
+      s.unitEl = li.querySelector(".b");
       levels.appendChild(li);
     });
   }
@@ -186,10 +274,23 @@
     $("card").style.transform = `rotate(${-h}deg)`;
     $("heading").textContent = String(Math.round(h) % 360).padStart(3, "0") + "°";
 
+    state.freqShown += (state.freq - state.freqShown) * 0.35;
+    const f = state.freqShown;
+    $("pointer").style.left = `${freqPct(f)}%`;
+    $("freq").textContent = `${f.toFixed(2)} MHz`;
+    $("knob-cap").style.transform = `rotate(${state.knobAngle}deg)`;
+    const knob = $("knob");
+    knob.setAttribute("aria-valuenow", f.toFixed(2));
+    knob.setAttribute("aria-valuetext", `${f.toFixed(2)} MHz`);
+    knob.setAttribute("aria-valuemin", radio.min);
+    knob.setAttribute("aria-valuemax", radio.max);
+
     let best = null;
     let bestGain = 0;
     cfg.stations.forEach((s) => {
-      const g = gainFor(angleDiff(h, s.bearing));
+      const g = state.mode === "radio"
+        ? gainFor(Math.abs(f - s.freq), radio.bandwidth)
+        : gainFor(angleDiff(h, s.bearing), cfg.beam);
       s.gain = g;
       if (g > bestGain) { bestGain = g; best = s; }
       s.markerEl.classList.toggle("on", g > 0.1);
@@ -250,6 +351,14 @@
     keepAwake();
   });
 
+  $("tab-compass").addEventListener("click", () => setMode("compass"));
+  $("tab-radio").addEventListener("click", () => setMode("radio"));
+
   buildDial();
+  buildScale();
+  setupKnob();
+  let savedMode = "compass";
+  try { savedMode = localStorage.getItem("rozhlas-mode") || "compass"; } catch (_) {}
+  setMode(savedMode === "radio" ? "radio" : "compass");
   requestAnimationFrame(frame);
 })();
