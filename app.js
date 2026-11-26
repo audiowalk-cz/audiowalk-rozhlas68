@@ -16,7 +16,10 @@
     freq: cfg.radio.start,
     freqShown: cfg.radio.start,
     knobAngle: 0,
+    jamStation: null,
   };
+  const jam = cfg.jammer;
+  let jamGain = null;
   const radio = cfg.radio;
 
   let ctx = null;
@@ -203,6 +206,30 @@
     noise.connect(band).connect(noiseGain).connect(master);
     noise.start();
 
+    const carrier = ctx.createOscillator();
+    carrier.type = "sawtooth";
+    carrier.frequency.value = 420;
+    const wobbleLfo = ctx.createOscillator();
+    wobbleLfo.frequency.value = 6.5;
+    const wobbleDepth = ctx.createGain();
+    wobbleDepth.gain.value = 260;
+    wobbleLfo.connect(wobbleDepth).connect(carrier.frequency);
+    const chop = ctx.createGain();
+    chop.gain.value = 0.5;
+    const chopLfo = ctx.createOscillator();
+    chopLfo.type = "square";
+    chopLfo.frequency.value = 14;
+    const chopDepth = ctx.createGain();
+    chopDepth.gain.value = 0.5;
+    chopLfo.connect(chopDepth).connect(chop.gain);
+    const jamFilter = ctx.createBiquadFilter();
+    jamFilter.type = "lowpass";
+    jamFilter.frequency.value = 2400;
+    jamGain = ctx.createGain();
+    jamGain.gain.value = 0;
+    carrier.connect(chop).connect(jamFilter).connect(jamGain).connect(master);
+    [carrier, wobbleLfo, chopLfo].forEach((o) => o.start());
+
     cfg.stations.forEach((s, i) => {
       const gain = ctx.createGain();
       gain.gain.value = 0;
@@ -285,12 +312,29 @@
     knob.setAttribute("aria-valuemin", radio.min);
     knob.setAttribute("aria-valuemax", radio.max);
 
+    const radioMode = state.mode === "radio";
+    const width = radioMode ? radio.bandwidth : cfg.beam;
+    const here = radioMode ? f : h;
+    const dist = (a, b) => (radioMode ? Math.abs(a - b) : angleDiff(a, b));
+    const posOf = (s) => (radioMode ? s.freq : s.bearing);
+
+    let jamLevel = 0;
+    const js = state.jamStation;
+    const bandEl = $("jam-band");
+    bandEl.hidden = !js;
+    if (js) {
+      const jamFreq = js.freq + Math.sin(performance.now() / 900) * jam.wobble * radio.bandwidth;
+      const jamWidth = jam.width * radio.bandwidth;
+      if (radioMode) jamLevel = gainFor(Math.abs(f - jamFreq), jamWidth);
+      bandEl.style.left = `${freqPct(jamFreq)}%`;
+      bandEl.style.width = `${((jamWidth * 2) / (radio.max - radio.min)) * 100}%`;
+    }
+
     let best = null;
     let bestGain = 0;
     cfg.stations.forEach((s) => {
-      const g = state.mode === "radio"
-        ? gainFor(Math.abs(f - s.freq), radio.bandwidth)
-        : gainFor(angleDiff(h, s.bearing), cfg.beam);
+      const raw = gainFor(dist(here, posOf(s)), width);
+      const g = raw * (1 - jam.mask * jamLevel);
       s.gain = g;
       if (g > bestGain) { bestGain = g; best = s; }
       s.markerEl.classList.toggle("on", g > 0.1);
@@ -303,7 +347,8 @@
     station.classList.toggle("off", !onAir);
     $("file").textContent = onAir ? best.file : "mezi stanicemi";
     $("noise").textContent = Math.round((1 - bestGain) * 100);
-    const lit = Math.round(bestGain * 12);
+    $("jammed").hidden = jamLevel < 0.15;
+    const lit = Math.round(bestGain * 12 * (jamLevel > 0.15 ? 0.4 + Math.random() * 0.6 : 1));
     [...$("meter").children].forEach((el, i) => el.classList.toggle("on", i < lit));
 
     const manual = performance.now() <= state.manualUntil;
@@ -316,6 +361,7 @@
       voices.forEach((v) => v.gain.gain.setTargetAtTime(v.station.gain, t, 0.08));
       const flutter = 0.85 + Math.random() * 0.3;
       noiseGain.gain.setTargetAtTime((cfg.noiseFloor + cfg.noiseLevel * (1 - bestGain)) * flutter, t, 0.05);
+      jamGain.gain.setTargetAtTime(jamLevel * jam.level, t, 0.05);
       master.gain.setTargetAtTime(state.muted ? 0 : 1, t, 0.05);
     }
 
@@ -349,6 +395,24 @@
     ctx.resume();
     voices.forEach((v) => v.el.play().catch(() => {}));
     keepAwake();
+  });
+
+  $("jam").addEventListener("click", (e) => {
+    const btn = e.currentTarget;
+    if (state.jamStation) {
+      state.jamStation = null;
+    } else {
+      let nearest = null;
+      let nd = Infinity;
+      cfg.stations.forEach((s) => {
+        const d = Math.abs(state.freq - s.freq);
+        if (d < nd) { nd = d; nearest = s; }
+      });
+      state.jamStation = nearest;
+    }
+    const on = Boolean(state.jamStation);
+    btn.setAttribute("aria-pressed", String(on));
+    btn.textContent = on ? `Vypnout rušičku (${state.jamStation.key})` : "Zapnout rušičku";
   });
 
   $("tab-compass").addEventListener("click", () => setMode("compass"));

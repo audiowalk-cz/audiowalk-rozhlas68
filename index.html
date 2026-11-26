@@ -74,6 +74,7 @@
         </div>
         <div id="scale-body" class="scale-body">
           <div id="scale-marks" class="scale-marks"></div>
+          <div id="jam-band" class="jam-band" hidden></div>
           <div id="pointer" class="pointer"></div>
         </div>
       </div>
@@ -83,12 +84,13 @@
         </div>
         <p class="label">OTÁČEJ PRSTEM</p>
       </div>
+      <button id="jam" class="jam-btn" aria-pressed="false">Zapnout rušičku</button>
     </section>
 
     <section class="panel" aria-live="polite">
       <div class="panel-row">
         <p class="label">PŘÍJEM</p>
-        <p class="label">ŠUM <span id="noise">100</span> %</p>
+        <p class="label"><span id="jammed" class="jammed" hidden>RUŠENO · </span>ŠUM <span id="noise">100</span> %</p>
       </div>
       <p id="station" class="station off">· · · šum · · ·</p>
       <p id="file" class="muted small">mezi stanicemi</p>
