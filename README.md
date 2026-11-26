@@ -9,6 +9,7 @@ Vše podstatné je v `config.js`:
 - `stations` – seznam stanic: `name`, `file` (cesta k MP3), `bearing` (azimut ve stupních, 0 = sever, 90 = východ).
 - `stations[].freq` – frekvence stanice v MHz pro režim Frekvence.
 - `radio` – rozsah stupnice (`min`, `max`), výchozí frekvence (`start`), šířka příjmu v MHz (`bandwidth`) a kolik MHz ujede jedna otáčka knoflíku (`mhzPerTurn`).
+- `jammer` – rušička v režimu Frekvence: `width` (šířka jako podíl `bandwidth`), `level` (hlasitost), `mask` (jak moc přehluší stanici), `wobble` (jak moc se kolem stanice chvěje).
 - `beam` – poloviční šířka výseče příjmu ve stupních. Čím menší, tím přesněji je potřeba mířit.
 - `noiseLevel` – hlasitost šumu mezi stanicemi, `noiseFloor` – šum, který je slyšet vždy.
 

@@ -3,6 +3,12 @@ window.ROZHLAS_CONFIG = {
   beam: 35,
   noiseLevel: 0.22,
   noiseFloor: 0.02,
+  jammer: {
+    width: 0.5,
+    level: 0.3,
+    mask: 0.9,
+    wobble: 0.12,
+  },
   radio: {
     min: 65.8,
     max: 74.0,
